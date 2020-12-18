@@ -3,7 +3,6 @@ defmodule EmptyWeb.UserRegistrationController do
 
   alias Empty.Accounts
   alias Empty.Accounts.User
-  alias EmptyWeb.UserAuth
 
   def new(conn, _params) do
     changeset = Accounts.change_user_registration(%User{})
@@ -18,13 +17,18 @@ defmodule EmptyWeb.UserRegistrationController do
             user,
             &Routes.user_confirmation_url(conn, :confirm, &1)
           )
-
+  
         conn
-        |> put_flash(:info, "User created successfully.")
-        |> UserAuth.log_in_user(user)
-
+        |> put_flash(
+          :info,
+          "User created successfully.  Please check your email for confirmation instructions."
+        )
+        # |> UserAuth.log_in_user(user)
+        |> redirect(to: Routes.user_session_path(conn, :new))
+  
       {:error, %Ecto.Changeset{} = changeset} ->
         render(conn, "new.html", changeset: changeset)
     end
   end
+  
 end

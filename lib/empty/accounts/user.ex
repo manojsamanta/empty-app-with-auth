@@ -23,6 +23,7 @@ defmodule Empty.Accounts.User do
   def registration_changeset(user, attrs) do
     user
     |> cast(attrs, [:email, :password])
+    |> validate_confirmation(:password, message: "does not match password")
     |> validate_email()
     |> validate_password()
   end
@@ -113,4 +114,10 @@ defmodule Empty.Accounts.User do
       add_error(changeset, :current_password, "is not valid")
     end
   end
+
+  @doc """
+  Returns true if the user has confirmed their account, false otherwise
+  """
+  def is_confirmed?(user), do: user.confirmed_at != nil
+
 end

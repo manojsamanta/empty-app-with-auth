@@ -20,35 +20,48 @@ defmodule EmptyWeb.UserRegistrationControllerTest do
 
   describe "POST /users/register" do
     @tag :capture_log
-    test "creates account and logs the user in", %{conn: conn} do
+    test "creates account and DOES NOT logs the user in", %{conn: conn} do
       email = unique_user_email()
 
       conn =
         post(conn, Routes.user_registration_path(conn, :create), %{
-          "user" => %{"email" => email, "password" => valid_user_password()}
+          "user" => %{
+            "email" => email, 
+            "password" => valid_user_password(),
+            "password_confirmation" => valid_user_password()
+          }
         })
 
-      assert get_session(conn, :user_token)
-      assert redirected_to(conn) =~ "/"
-
-      # Now do a logged in request and assert on the menu
-      conn = get(conn, "/")
-      response = html_response(conn, 200)
-      assert response =~ email
-      assert response =~ "Settings</a>"
-      assert response =~ "Log out</a>"
+      refute get_session(conn, :user_token)
+      assert redirected_to(conn) =~ "/users/log_in"
+    
+      assert flash_messages_contain(
+               conn,
+               "User created successfully.  Please check your email for confirmation instructions."
+             )
+    end
+    
+    defp flash_messages_contain(conn, text) do
+      conn
+      |> Phoenix.Controller.get_flash()
+      |> Enum.any?(fn item -> String.contains?(elem(item, 1), text) end)
     end
 
     test "render errors for invalid data", %{conn: conn} do
       conn =
         post(conn, Routes.user_registration_path(conn, :create), %{
-          "user" => %{"email" => "with spaces", "password" => "too short"}
+          "user" => %{
+            "email" => "with spaces", 
+            "password" => "too short",
+            "password_confirmation" => "does not match"
+          }
         })
 
       response = html_response(conn, 200)
       assert response =~ "<h1>Register</h1>"
       assert response =~ "must have the @ sign and no spaces"
       assert response =~ "should be at least 12 character"
+      assert response =~ "does not match password"
     end
   end
 end
