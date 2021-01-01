@@ -12,7 +12,7 @@ config :empty,
 
 # Configures the endpoint
 config :empty, EmptyWeb.Endpoint,
-  url: [host: "localhost"],
+  url: [host: "atgc.work", port: 1111],
   secret_key_base: "K2IrXZddnloWwnJAbEdDrxBr/YAM1ts4Gqqf/gc9in846MqDdMsZxtmXceAF6JAE",
   render_errors: [view: EmptyWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: Empty.PubSub,
